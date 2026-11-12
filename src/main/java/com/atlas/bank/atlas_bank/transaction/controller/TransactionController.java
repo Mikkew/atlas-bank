@@ -1,5 +1,6 @@
 package com.atlas.bank.atlas_bank.transaction.controller;
 
+import com.atlas.bank.atlas_bank.transaction.dto.TransactionMapper;
 import com.atlas.bank.atlas_bank.transaction.dto.TransactionResponse;
 import com.atlas.bank.atlas_bank.transaction.dto.TransferRequest;
 import com.atlas.bank.atlas_bank.transaction.model.Transaction;
@@ -18,6 +19,7 @@ public class TransactionController {
 
     private final ITransferService transferService;
     private final ITransactionQueryService transactionQueryService;
+    private final TransactionMapper transactionMapper;
 
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponse> transfer(@RequestBody TransferRequest request) {
@@ -25,26 +27,14 @@ public class TransactionController {
                 request.getFromAccountId(),
                 request.getToAccountId(),
                 request.getAmount());
-        return ResponseEntity.ok(toResponse(transaction));
+        return ResponseEntity.ok(transactionMapper.toResponse(transaction));
     }
 
     @GetMapping("/{id}/transaccions")
     public ResponseEntity<List<TransactionResponse>> getTransaccions(@PathVariable Long id) {
         final List<TransactionResponse> responseList = transactionQueryService.getByAccountById(id).stream()
-                .map(this::toResponse)
+                .map(transactionMapper::toResponse)
                 .toList();
         return ResponseEntity.ok(responseList);
-    }
-
-    private TransactionResponse toResponse(Transaction transaction) {
-        return TransactionResponse.builder()
-                .id(transaction.getId())
-                .type(transaction.getType())
-                .sourceAccountId(transaction.getSourceAccountId())
-                .targetAccountId(transaction.getTargetAccountId())
-                .amount(transaction.getAmount())
-                .fee(transaction.getFee())
-                .status(transaction.getStatus())
-                .createdAt(transaction.getCreatedAt()).build();
     }
 }
