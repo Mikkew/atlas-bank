@@ -1,0 +1,28 @@
+package com.atlas.bank.atlas_bank.transaction.dto;
+
+import lombok.Builder;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+public class TransactionResponse {
+
+    private Long id;
+
+    private String type;
+
+    private Long sourceAccountId;
+
+    private Long targetAccountId;
+
+    private BigDecimal amount;
+
+    private BigDecimal fee;
+
+    private String status;
+
+    private LocalDateTime createdAt;
+}
