@@ -9,10 +9,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TransactionQueryService {
+public class TransactionQueryService implements ITransactionQueryService {
 
     private final TransactionRepository transactionRepository;
 
+    @Override
     public List<Transaction> getByAccountById(Long accountId) {
         return transactionRepository
                 .findBySourceAccountIdOrTargetAccountId(accountId, accountId);
