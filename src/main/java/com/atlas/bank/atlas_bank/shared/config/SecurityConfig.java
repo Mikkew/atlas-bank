@@ -2,6 +2,8 @@ package com.atlas.bank.atlas_bank.shared.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,8 +22,23 @@ import java.util.stream.Collectors;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, Environment environment) throws Exception {
+        boolean devProfile = environment.acceptsProfiles(Profiles.of("dev"));
+
         http
+                .authorizeHttpRequests(auth -> {
+                    //Herramientas de desarrollo (Actuator, Swagger UI) solo públicas en el perfil dev
+                    if (devProfile) {
+                        auth.requestMatchers(
+                                "/actuator/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll();
+                    } else {
+                        auth.requestMatchers("/actuator/health").permitAll();
+                    }
+                })
                 .authorizeHttpRequests(auth -> auth
                         //Accounts
                         .requestMatchers(HttpMethod.POST, "/api/v1/accounts").hasRole("ADMIN")
