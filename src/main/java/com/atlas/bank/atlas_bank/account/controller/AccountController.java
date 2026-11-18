@@ -3,7 +3,9 @@ package com.atlas.bank.atlas_bank.account.controller;
 import com.atlas.bank.atlas_bank.account.dto.AccountMapper;
 import com.atlas.bank.atlas_bank.account.dto.AccountResponse;
 import com.atlas.bank.atlas_bank.account.dto.CreateAccountRequest;
+import com.atlas.bank.atlas_bank.account.dto.DashboardResponse;
 import com.atlas.bank.atlas_bank.account.model.Account;
+import com.atlas.bank.atlas_bank.account.service.AccountDashboardFacade;
 import com.atlas.bank.atlas_bank.account.service.IAccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class AccountController {
 
     private final IAccountService accountService;
     private final AccountMapper accountMapper;
+    private AccountDashboardFacade dashboardFacade;
 
     @GetMapping
     public ResponseEntity<List<AccountResponse>> findAll() {
@@ -33,6 +36,11 @@ public class AccountController {
     public ResponseEntity<AccountResponse> findById(@PathVariable Long id) {
         final Account account = accountService.findById(id);
         return ResponseEntity.ok(accountMapper.toResponse(account));
+    }
+
+    @GetMapping("/{id}/dashboard")
+    public ResponseEntity<DashboardResponse> getDashboard(@PathVariable Long id) {
+        return ResponseEntity.ok(dashboardFacade.getDashboard(id));
     }
     
     @PostMapping
