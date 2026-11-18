@@ -21,8 +21,9 @@ public class Transaction {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String type; // DEPOSIT, WITHDRAWAL, TRANSFER
+    private TransactionTyoe type; // DEPOSIT, WITHDRAWAL, TRANSFER
 
     @Column(name = "source_account_id")
     private Long sourceAccountId;
@@ -36,17 +37,16 @@ public class Transaction {
     @Column(nullable = false)
     private BigDecimal fee;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status; // PENDING, EXECUTED, REJECTED
+    private TransactionStatus status; // PENDING, EXECUTED, REJECTED
 
     @Column(name = "create_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    private String createdBy;
-
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = "EXECUTED";
+        if (this.status == null) this.status = TransactionStatus.EXECUTED;
     }
 }
