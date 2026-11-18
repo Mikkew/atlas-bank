@@ -3,6 +3,7 @@ package com.atlas.bank.atlas_bank.account.service;
 import com.atlas.bank.atlas_bank.account.model.Account;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 @Primary
+//ESta desactivado es un Cache de formq manual
+@ConditionalOnProperty(name = "atlas.account.cache.enabled", havingValue = "true")
 public class CachedAccountService implements IAccountService {
 
     private final IAccountService delegate;

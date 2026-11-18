@@ -20,17 +20,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/accounts")
 @RequiredArgsConstructor
-@Slf4j
 public class AccountController {
 
     private final IAccountService accountService;
     private final AccountMapper accountMapper;
     private AccountDashboardFacade dashboardFacade;
-
-    @PostConstruct
-    public void init() {
-        log.info("Clase real del accountService: {}", accountService.getClass().getName());
-    }
 
     @GetMapping
     public ResponseEntity<List<AccountResponse>> findAll() {
