@@ -4,6 +4,7 @@ import com.atlas.bank.atlas_bank.account.exception.AccountNotFoundException;
 import com.atlas.bank.atlas_bank.account.model.Account;
 import com.atlas.bank.atlas_bank.account.model.AccountStatus;
 import com.atlas.bank.atlas_bank.account.repository.AccountRepository;
+import com.atlas.bank.atlas_bank.shared.model.Money;
 import com.atlas.bank.atlas_bank.transaction.exception.AccountNotActiveException;
 import com.atlas.bank.atlas_bank.transaction.exception.InsufficientFundsException;
 import com.atlas.bank.atlas_bank.transaction.model.Transaction;
@@ -87,8 +88,12 @@ public class TransferService extends TransactionProcessor<TransferContext> imple
 
     @Override
     protected void execute(TransferContext ctx, BigDecimal fee) {
-        ctx.from().setBalance(ctx.from().getBalance().subtract(ctx.amount()).subtract(fee));
-        ctx.to().setBalance(ctx.to().getBalance().add(ctx.amount()));
+        BigDecimal newFromBalance = ctx.from().getBalance().getAmount().subtract(ctx.amount()).subtract(fee);
+        ctx.from().setBalance(Money.of(newFromBalance, ctx.from().getBalance().getCurrency()));
+
+        BigDecimal newToBalance = ctx.to().getBalance().getAmount().add(ctx.amount());
+        ctx.to().setBalance(Money.of(newToBalance, ctx.to().getBalance().getCurrency()));
+
         accountRepository.save(ctx.from());
         accountRepository.save(ctx.to());
     }

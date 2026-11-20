@@ -11,8 +11,8 @@ public class SufficientFundsValidator implements TransferValidator {
 
     @Override
     public void validate(TransferContext ctx) {
-        if (ctx.from().getBalance().compareTo(ctx.amount()) < 0) {
-            throw new InsufficientFundsException(ctx.from().getId(), ctx.from().getBalance(), ctx.amount());
+        if (ctx.from().getBalance().getAmount().compareTo(ctx.amount()) < 0) {
+            throw new InsufficientFundsException(ctx.from().getId(), ctx.from().getBalance().getAmount(), ctx.amount());
         }
     }
 }
