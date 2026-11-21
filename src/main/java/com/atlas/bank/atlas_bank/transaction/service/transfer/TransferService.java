@@ -2,22 +2,15 @@ package com.atlas.bank.atlas_bank.transaction.service.transfer;
 
 import com.atlas.bank.atlas_bank.account.exception.AccountNotFoundException;
 import com.atlas.bank.atlas_bank.account.model.Account;
-import com.atlas.bank.atlas_bank.account.model.AccountStatus;
 import com.atlas.bank.atlas_bank.account.repository.AccountRepository;
-import com.atlas.bank.atlas_bank.shared.model.Money;
-import com.atlas.bank.atlas_bank.transaction.exception.AccountNotActiveException;
-import com.atlas.bank.atlas_bank.transaction.exception.InsufficientFundsException;
+import com.atlas.bank.atlas_bank.account.repository.DomainAccountRepository;
 import com.atlas.bank.atlas_bank.transaction.model.Transaction;
 import com.atlas.bank.atlas_bank.transaction.repository.TransactionRepository;
-import com.atlas.bank.atlas_bank.transaction.service.event.TransactionExecutedEvent;
-import com.atlas.bank.atlas_bank.transaction.service.exception.FraudCheckException;
+import com.atlas.bank.atlas_bank.transaction.service.domain.TransferDomainService;
 import com.atlas.bank.atlas_bank.transaction.service.factory.TransactionFactory;
 import com.atlas.bank.atlas_bank.transaction.service.fee.FeeCalculator;
-import com.atlas.bank.atlas_bank.transaction.service.fraud.FraudCheckResult;
-import com.atlas.bank.atlas_bank.transaction.service.fraud.FraudChecker;
 import com.atlas.bank.atlas_bank.transaction.validation.chain.TransferValidator;
 import jakarta.transaction.Transactional;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,21 +19,21 @@ import java.util.List;
 @Service
 public class TransferService extends TransactionProcessor<TransferContext> implements ITransferService {
 
-    private final AccountRepository accountRepository;
+    private final DomainAccountRepository accountRepository;
     private final List<FeeCalculator> feeCalculators;
-    private final ApplicationEventPublisher eventPublisher;
     private final List<TransferValidator> validators;
+    private final TransferDomainService transferDomainService;
 
     public TransferService(TransactionRepository transactionRepository,
                            AccountRepository accountRepository,
-                           List<FeeCalculator> feeCalculator,
-                           ApplicationEventPublisher eventPublisher,
-                           List<TransferValidator> validators) {
+                           List<FeeCalculator> feeCalculators,
+                           List<TransferValidator> validators,
+                           TransferDomainService transferDomainService) {
         super(transactionRepository);
         this.accountRepository = accountRepository;
-        this.feeCalculators = feeCalculator;
-        this.eventPublisher = eventPublisher;
+        this.feeCalculators = feeCalculators;
         this.validators = validators;
+        this.transferDomainService = transferDomainService;
     }
 
     @Override
@@ -55,19 +48,9 @@ public class TransferService extends TransactionProcessor<TransferContext> imple
 
         Transaction transaction = process(new TransferContext(from, to, amount));
 
-        transaction.advanceTo(transaction.getState().validate());
-        transaction.advanceTo(transaction.getState().execute());
+        transaction.executedTransfer();
 
         transactionRepository.save(transaction);
-
-        eventPublisher.publishEvent(new TransactionExecutedEvent(
-                transaction.getId(),
-                transaction.getType().name(),
-                transaction.getSourceAccountId(),
-                transaction.getTargetAccountId(),
-                transaction.getAmount(),
-                transaction.getFee()
-        ));
 
         return transaction;
     }
@@ -88,12 +71,7 @@ public class TransferService extends TransactionProcessor<TransferContext> imple
 
     @Override
     protected void execute(TransferContext ctx, BigDecimal fee) {
-        BigDecimal newFromBalance = ctx.from().getBalance().getAmount().subtract(ctx.amount()).subtract(fee);
-        ctx.from().setBalance(Money.of(newFromBalance, ctx.from().getBalance().getCurrency()));
-
-        BigDecimal newToBalance = ctx.to().getBalance().getAmount().add(ctx.amount());
-        ctx.to().setBalance(Money.of(newToBalance, ctx.to().getBalance().getCurrency()));
-
+        transferDomainService.transfer(ctx.from(), ctx.to(), ctx.amount(), fee);
         accountRepository.save(ctx.from());
         accountRepository.save(ctx.to());
     }

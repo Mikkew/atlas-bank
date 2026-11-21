@@ -1,11 +1,12 @@
 package com.atlas.bank.atlas_bank.account.model;
 
 import com.atlas.bank.atlas_bank.shared.model.Currency;
+import com.atlas.bank.atlas_bank.shared.model.Email;
 import com.atlas.bank.atlas_bank.shared.model.Money;
+import com.atlas.bank.atlas_bank.transaction.exception.InsufficientFundsException;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -29,8 +30,9 @@ public class Account {
     @Column(name = "owner_name", nullable = false)
     private String ownerName;
 
-    @Column(nullable = false)
-    private String email;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false))
+    private Email email;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -52,10 +54,32 @@ public class Account {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "customerId")
+    private Long customerId;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         if (status == null) status = AccountStatus.ACTIVE;
         if (balance == null) balance = Money.zero(Currency.MXN);
+    }
+
+    public void deposite(Money amount) {
+        if (amount.isNegative()) {
+            throw new IllegalArgumentException("El monto a depositar no puede ser negativo");
+        }
+        balance = balance.add(amount);
+    }
+
+    public void  withdraw(Money amount) {
+        if (amount.isNegative()) {
+            throw new IllegalArgumentException("El monto a retirar no puede ser negativo");
+        }
+
+        if (balance.isLessThan(amount)) {
+            throw  new InsufficientFundsException(id, balance.getAmount(), amount.getAmount());
+        }
+
+        balance = balance.substract(amount);
     }
 }

@@ -26,7 +26,7 @@ public class Money {
 
     private Money(BigDecimal amount, Currency currency) {
         if (amount == null) {
-            throw new IllegalArgumentException("El mundo  puede ser nulo");
+            throw new IllegalArgumentException("El amount puede ser nulo");
         }
 
         this.amount = amount.setScale(2, RoundingMode.HALF_UP);
@@ -54,6 +54,11 @@ public class Money {
     public boolean isGreaterThan(Money other) {
         validateSameCurrency(other);
         return this.amount.compareTo(other.amount) > 0;
+    }
+
+    public boolean isLessThan(Money other) {
+        validateSameCurrency(other);
+        return this.amount.compareTo(other.amount) < 0;
     }
 
     public boolean isNegative() {
