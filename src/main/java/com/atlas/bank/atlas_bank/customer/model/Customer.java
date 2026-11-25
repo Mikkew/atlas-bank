@@ -1,9 +1,6 @@
 package com.atlas.bank.atlas_bank.customer.model;
 
-import com.atlas.bank.atlas_bank.account.model.AccountStatus;
-import com.atlas.bank.atlas_bank.shared.model.Currency;
 import com.atlas.bank.atlas_bank.shared.model.Email;
-import com.atlas.bank.atlas_bank.shared.model.Money;
 import jakarta.persistence.*;
 import lombok.*;
 

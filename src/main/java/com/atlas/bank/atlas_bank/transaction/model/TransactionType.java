@@ -1,6 +1,6 @@
 package com.atlas.bank.atlas_bank.transaction.model;
 
-public enum TransactionTyoe {
+public enum TransactionType {
     DEPOSIT,
     WITHDRAWAL,
     TRANSFER

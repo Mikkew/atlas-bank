@@ -26,7 +26,7 @@ public class Transaction extends AbstractAggregateRoot<Transaction> {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private TransactionTyoe type; // DEPOSIT, WITHDRAWAL, TRANSFER
+    private TransactionType type; // DEPOSIT, WITHDRAWAL, TRANSFER
 
     @Column(name = "source_account_id")
     private Long sourceAccountId;

@@ -7,10 +7,8 @@ import com.atlas.bank.atlas_bank.account.dto.DashboardResponse;
 import com.atlas.bank.atlas_bank.account.model.Account;
 import com.atlas.bank.atlas_bank.account.service.AccountDashboardFacade;
 import com.atlas.bank.atlas_bank.account.service.IAccountService;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +22,7 @@ public class AccountController {
 
     private final IAccountService accountService;
     private final AccountMapper accountMapper;
-    private AccountDashboardFacade dashboardFacade;
+    private final AccountDashboardFacade dashboardFacade;
 
     @GetMapping
     public ResponseEntity<List<AccountResponse>> findAll() {

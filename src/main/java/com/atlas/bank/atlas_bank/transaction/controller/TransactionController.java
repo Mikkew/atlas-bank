@@ -1,11 +1,11 @@
 package com.atlas.bank.atlas_bank.transaction.controller;
 
+import com.atlas.bank.atlas_bank.application.port.in.TransferMoneyUseCase;
 import com.atlas.bank.atlas_bank.transaction.dto.TransactionMapper;
 import com.atlas.bank.atlas_bank.transaction.dto.TransactionResponse;
 import com.atlas.bank.atlas_bank.transaction.dto.TransferRequest;
 import com.atlas.bank.atlas_bank.transaction.model.Transaction;
 import com.atlas.bank.atlas_bank.transaction.service.ITransactionQueryService;
-import com.atlas.bank.atlas_bank.transaction.service.transfer.ITransferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +18,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TransactionController {
 
-    private final ITransferService transferService;
+	private final TransferMoneyUseCase transferMoneyUseCase;
     private final ITransactionQueryService transactionQueryService;
     private final TransactionMapper transactionMapper;
 
-    @GetMapping("/{id}/transaccions")
-    public ResponseEntity<List<TransactionResponse>> getTransaccions(@PathVariable Long id) {
+    @GetMapping("/{id}/transactions")
+    public ResponseEntity<List<TransactionResponse>> getTransactions(@PathVariable Long id) {
         final List<TransactionResponse> responseList = transactionQueryService.getByAccountById(id).stream()
                 .map(transactionMapper::toResponse)
                 .toList();
@@ -32,7 +32,7 @@ public class TransactionController {
 
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponse> transfer(@Valid @RequestBody TransferRequest request) {
-        final Transaction transaction = transferService.execute(
+        final Transaction transaction = transferMoneyUseCase.execute(
                 request.getFromAccountId(),
                 request.getToAccountId(),
                 request.getAmount());

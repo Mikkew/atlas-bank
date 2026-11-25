@@ -7,6 +7,4 @@ import java.math.BigDecimal;
 public interface ITransferService {
 
     Transaction execute(Long fromId, Long toId, BigDecimal amount);
-
-
 }

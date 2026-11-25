@@ -2,7 +2,6 @@ package com.atlas.bank.atlas_bank.account.service;
 
 import com.atlas.bank.atlas_bank.account.exception.AccountNotFoundException;
 import com.atlas.bank.atlas_bank.account.model.Account;
-import com.atlas.bank.atlas_bank.account.repository.AccountRepository;
 import com.atlas.bank.atlas_bank.account.repository.DomainAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;

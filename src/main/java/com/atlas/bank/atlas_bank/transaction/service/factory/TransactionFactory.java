@@ -2,7 +2,7 @@ package com.atlas.bank.atlas_bank.transaction.service.factory;
 
 import com.atlas.bank.atlas_bank.transaction.model.Transaction;
 import com.atlas.bank.atlas_bank.transaction.model.TransactionStatus;
-import com.atlas.bank.atlas_bank.transaction.model.TransactionTyoe;
+import com.atlas.bank.atlas_bank.transaction.model.TransactionType;
 import com.atlas.bank.atlas_bank.transaction.model.state.PendingState;
 import com.atlas.bank.atlas_bank.transaction.service.transfer.TransferContext;
 
@@ -12,7 +12,7 @@ public class TransactionFactory {
 
     public static Transaction createTransfer(TransferContext ctx, BigDecimal fee) {
         Transaction transaction = Transaction.builder()
-                .type(TransactionTyoe.TRANSFER)
+                .type(TransactionType.TRANSFER)
                 .sourceAccountId(ctx.from().getId())
                 .targetAccountId(ctx.to().getId())
                 .amount(ctx.amount())

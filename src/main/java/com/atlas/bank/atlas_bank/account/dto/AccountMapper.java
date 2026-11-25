@@ -17,11 +17,11 @@ public interface AccountMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "balance", source = "balance", qualifiedByName = "toMoney")
-    @Mapping(target = "email", source = "balance", qualifiedByName = "toEmail")
+    @Mapping(target = "email", source = "email", qualifiedByName = "toEmail")
     Account toEntity(CreateAccountRequest request);
 
     @Mapping(target = "balance", source = "balance", qualifiedByName = "toAmount")
-    @Mapping(target = "email", source = "balance", qualifiedByName = "fromEmail")
+    @Mapping(target = "email", source = "email", qualifiedByName = "fromEmail")
     AccountResponse toResponse(Account account);
 
     @Named("toMoney")

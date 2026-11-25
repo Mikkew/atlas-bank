@@ -43,11 +43,11 @@ public class SecurityConfig {
                         //Accounts
                         .requestMatchers(HttpMethod.POST, "/api/v1/accounts").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/accounts").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/accounts/{ID}").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/accounts/{id}").hasAnyRole("USER", "ADMIN")
 
                         //Transactions
                         .requestMatchers(HttpMethod.POST, "/api/v1/transactions/transfer").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/transactions/{id}/transactions").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/transactions/{id}/transactions").hasAnyRole("USER", "ADMIN")
 
                         //H2
                         .requestMatchers("/h2-console/**").permitAll()
@@ -64,7 +64,8 @@ public class SecurityConfig {
         return http.build();
     }
 
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
+    @SuppressWarnings("unchecked")
+	private JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
