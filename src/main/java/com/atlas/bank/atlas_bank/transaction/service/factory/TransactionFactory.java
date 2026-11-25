@@ -1,9 +1,9 @@
 package com.atlas.bank.atlas_bank.transaction.service.factory;
 
-import com.atlas.bank.atlas_bank.transaction.model.Transaction;
-import com.atlas.bank.atlas_bank.transaction.model.TransactionStatus;
-import com.atlas.bank.atlas_bank.transaction.model.TransactionType;
-import com.atlas.bank.atlas_bank.transaction.model.state.PendingState;
+import com.atlas.bank.atlas_bank.domain.model.transaction.Transaction;
+import com.atlas.bank.atlas_bank.domain.model.transaction.TransactionStatus;
+import com.atlas.bank.atlas_bank.domain.model.transaction.TransactionType;
+import com.atlas.bank.atlas_bank.domain.model.transaction.state.PendingState;
 import com.atlas.bank.atlas_bank.transaction.service.transfer.TransferContext;
 
 import java.math.BigDecimal;

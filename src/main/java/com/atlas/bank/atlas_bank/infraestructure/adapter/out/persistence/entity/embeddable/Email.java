@@ -1,4 +1,4 @@
-package com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence;
+package com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.entity.embeddable;
 
 import jakarta.persistence.Embeddable;
 import lombok.EqualsAndHashCode;

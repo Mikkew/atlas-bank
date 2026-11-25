@@ -1,4 +1,7 @@
-package com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence;
+package com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.mapper;
+
+import com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.entity.CustomerJpaEntity;
+import com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.entity.embeddable.Email;
 
 import com.atlas.bank.atlas_bank.domain.model.customer.Customer;
 import org.springframework.stereotype.Component;
@@ -12,7 +15,7 @@ public class CustomerPersistenceMapper {
                 .id(entity.getId())
                 .name(entity.getName())
                 .email(entity.getEmail() != null
-                        ? com.atlas.bank.atlas_bank.shared.model.Email.of(entity.getEmail().getValue())
+                        ? com.atlas.bank.atlas_bank.domain.model.shared.Email.of(entity.getEmail().getValue())
                         : null)
                 .status(entity.getStatus())
                 .createdAt(entity.getCreatedAt())

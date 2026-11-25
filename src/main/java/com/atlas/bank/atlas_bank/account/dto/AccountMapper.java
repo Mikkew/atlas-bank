@@ -1,9 +1,9 @@
 package com.atlas.bank.atlas_bank.account.dto;
 
-import com.atlas.bank.atlas_bank.account.model.Account;
-import com.atlas.bank.atlas_bank.shared.model.Currency;
-import com.atlas.bank.atlas_bank.shared.model.Email;
-import com.atlas.bank.atlas_bank.shared.model.Money;
+import com.atlas.bank.atlas_bank.domain.model.account.Account;
+import com.atlas.bank.atlas_bank.domain.model.shared.Currency;
+import com.atlas.bank.atlas_bank.domain.model.shared.Email;
+import com.atlas.bank.atlas_bank.domain.model.shared.Money;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -16,6 +16,7 @@ public interface AccountMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "customerId", ignore = true)
     @Mapping(target = "balance", source = "balance", qualifiedByName = "toMoney")
     @Mapping(target = "email", source = "email", qualifiedByName = "toEmail")
     Account toEntity(CreateAccountRequest request);

@@ -1,6 +1,6 @@
 package com.atlas.bank.atlas_bank.domain.model.customer;
 
-import com.atlas.bank.atlas_bank.shared.model.Email;
+import com.atlas.bank.atlas_bank.domain.model.shared.Email;
 import lombok.*;
 
 import java.time.LocalDateTime;

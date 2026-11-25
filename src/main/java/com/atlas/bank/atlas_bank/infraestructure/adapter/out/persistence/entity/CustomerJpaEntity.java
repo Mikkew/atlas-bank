@@ -1,6 +1,8 @@
-package com.atlas.bank.atlas_bank.customer.model;
+package com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.entity;
 
-import com.atlas.bank.atlas_bank.shared.model.Email;
+import com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.entity.embeddable.Email;
+
+import com.atlas.bank.atlas_bank.domain.model.customer.CustomerStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Customer {
+public class CustomerJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,9 +41,5 @@ public class Customer {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         if (status == null) status = CustomerStatus.ACTIVE;
-    }
-
-    public boolean isActive() {
-        return status == CustomerStatus.ACTIVE;
     }
 }

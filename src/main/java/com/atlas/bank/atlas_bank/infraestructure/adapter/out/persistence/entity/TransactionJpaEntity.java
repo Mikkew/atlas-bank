@@ -1,7 +1,8 @@
-package com.atlas.bank.atlas_bank.transaction.model;
+package com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.entity;
 
-import com.atlas.bank.atlas_bank.transaction.model.state.*;
-import com.atlas.bank.atlas_bank.transaction.service.event.TransactionExecutedEvent;
+import com.atlas.bank.atlas_bank.domain.model.transaction.TransactionStatus;
+import com.atlas.bank.atlas_bank.domain.model.transaction.TransactionType;
+import com.atlas.bank.atlas_bank.domain.model.transaction.state.TransactionState;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.domain.AbstractAggregateRoot;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-public class Transaction extends AbstractAggregateRoot<Transaction> {
+public class TransactionJpaEntity extends AbstractAggregateRoot<TransactionJpaEntity> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,40 +55,5 @@ public class Transaction extends AbstractAggregateRoot<Transaction> {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) this.status = TransactionStatus.EXECUTED;
-    }
-
-    public TransactionState getState() {
-        if (state == null) {
-            state = switch (status) {
-                case PENDING -> new PendingState();
-                case VALIDATED -> new ValidateState();
-                case EXECUTED -> new ExecutedState();
-                case REJECTED -> new RejectedState();
-                case REVERSED -> new ReversedState();
-            };
-        }
-        return state;
-    }
-
-    public void advanceTo(TransactionState newState) {
-        state = newState;
-        status = newState.status();
-    }
-
-    public void markAsExecuted() {
-        registerEvent(new TransactionExecutedEvent(
-                id,
-                type.name(),
-                sourceAccountId,
-                targetAccountId,
-                amount,
-                fee
-        ));
-    }
-
-    public void executedTransfer() {
-        advanceTo(getState().validate());
-        advanceTo(getState().execute());
-        markAsExecuted();
     }
 }
