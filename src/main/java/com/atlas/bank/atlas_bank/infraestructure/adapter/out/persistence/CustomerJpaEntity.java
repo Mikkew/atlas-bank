@@ -1,7 +1,6 @@
 package com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence;
 
 import com.atlas.bank.atlas_bank.domain.model.customer.CustomerStatus;
-import com.atlas.bank.atlas_bank.shared.model.Email;
 import jakarta.persistence.*;
 import lombok.*;
 
