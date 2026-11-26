@@ -122,7 +122,7 @@ Contiene las reglas que existirían aunque no hubiera software: una cuenta no pu
 | `model/transaction` | Entidad Transacción y su ciclo de vida | `Transaction`, `TransferContext`, `state/*` (`PendingState`, `ExecutedState`...) |
 | `model/shared` | Value Objects reutilizables | `Money`, `Email`, `Currency`, `FraudCheckResult` |
 | `service` | Lógica que involucra a varias entidades | `TransferDomainService` (retira de una cuenta y deposita en otra) |
-| `strategy/fee` | Cálculo de comisiones por tipo de cuenta | `FeeCalculator`, `SavingFeeCalculator`, `CheckingFeeCalculator`... |
+| `strategy/fee` | Cálculo de comisiones por tipo de cuenta | `FeeCalculator`, `SavingsFeeCalculator`, `CheckingFeeCalculator`... |
 | `validation` | Reglas que debe cumplir una transferencia | `AccountStatusValidator`, `SufficientFundsValidator`, `FraudValidator` |
 | `factory` | Creación de objetos de dominio complejos | `TransactionFactory` |
 | `event` | Hechos de negocio que ya ocurrieron | `TransactionExecutedEvent` |

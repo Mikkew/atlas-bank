@@ -1,6 +1,8 @@
 package com.atlas.bank.atlas_bank.infrastructure.adapter.in.rest.controller;
 
-import com.atlas.bank.atlas_bank.application.service.account.IAccountService;
+import com.atlas.bank.atlas_bank.application.port.in.CreateAccountUseCase;
+import com.atlas.bank.atlas_bank.application.port.in.GetAccountUseCase;
+import com.atlas.bank.atlas_bank.application.port.in.ListAccountsUseCase;
 import com.atlas.bank.atlas_bank.domain.model.account.Account;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.in.rest.dto.request.CreateAccountRequest;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.in.rest.dto.response.AccountResponse;
@@ -20,13 +22,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountController {
 
-    private final IAccountService accountService;
+    private final ListAccountsUseCase listAccountsUseCase;
+    private final GetAccountUseCase getAccountUseCase;
+    private final CreateAccountUseCase createAccountUseCase;
     private final AccountMapper accountMapper;
     private final AccountDashboardFacade dashboardFacade;
 
     @GetMapping
     public ResponseEntity<List<AccountResponse>> findAll() {
-        final List<AccountResponse> responseList = accountService.findAll().stream()
+        final List<AccountResponse> responseList = listAccountsUseCase.findAll().stream()
                 .map(accountMapper::toResponse)
                 .toList();
         return ResponseEntity.ok(responseList);
@@ -34,7 +38,7 @@ public class AccountController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountResponse> findById(@PathVariable Long id) {
-        final Account account = accountService.findById(id);
+        final Account account = getAccountUseCase.findById(id);
         return ResponseEntity.ok(accountMapper.toResponse(account));
     }
 
@@ -45,7 +49,7 @@ public class AccountController {
     
     @PostMapping
     public ResponseEntity<AccountResponse> create(@Valid @RequestBody CreateAccountRequest request) {
-        final Account account = accountService.create(accountMapper.toEntity(request));
+        final Account account = createAccountUseCase.create(accountMapper.toEntity(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(accountMapper.toResponse(account));
     }
 }

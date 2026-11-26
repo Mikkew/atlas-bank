@@ -18,8 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-public class TransferService extends TransactionProcessor<TransferContext>
-		implements ITransferService, TransferMoneyUseCase {
+public class TransferService extends TransactionProcessor<TransferContext> implements TransferMoneyUseCase {
 
     private final AccountRepositoryPort accountRepository;
     private final List<FeeCalculator> feeCalculators;
@@ -40,7 +39,7 @@ public class TransferService extends TransactionProcessor<TransferContext>
 
     @Override
     @Transactional
-    public Transaction execute(Long fromId, Long toId, BigDecimal amount) {
+    public Transaction transfer(Long fromId, Long toId, BigDecimal amount) {
         // Buscar cuentas
         Account from = accountRepository.findById(fromId)
                 .orElseThrow(() -> new AccountNotFoundException(fromId));

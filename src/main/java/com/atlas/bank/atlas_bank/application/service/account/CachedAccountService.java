@@ -1,5 +1,8 @@
 package com.atlas.bank.atlas_bank.application.service.account;
 
+import com.atlas.bank.atlas_bank.application.port.in.CreateAccountUseCase;
+import com.atlas.bank.atlas_bank.application.port.in.GetAccountUseCase;
+import com.atlas.bank.atlas_bank.application.port.in.ListAccountsUseCase;
 import com.atlas.bank.atlas_bank.domain.model.account.Account;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,18 +19,25 @@ import java.util.concurrent.ConcurrentHashMap;
 @Primary
 //ESta desactivado es un Cache de formq manual
 @ConditionalOnProperty(name = "atlas.account.cache.enabled", havingValue = "true")
-public class CachedAccountService implements IAccountService {
+public class CachedAccountService implements ListAccountsUseCase, GetAccountUseCase, CreateAccountUseCase {
 
-    private final IAccountService delegate;
+    private final ListAccountsUseCase listAccountsUseCase;
+    private final GetAccountUseCase getAccountUseCase;
+    private final CreateAccountUseCase createAccountUseCase;
     private final Map<Long, Account> cache = new ConcurrentHashMap<>();
 
-    public CachedAccountService(@Qualifier("auditableAccountService") IAccountService delegate) {
-        this.delegate = delegate;
+    public CachedAccountService(
+            @Qualifier("auditableAccountService") ListAccountsUseCase listAccountsUseCase,
+            @Qualifier("auditableAccountService") GetAccountUseCase getAccountUseCase,
+            @Qualifier("auditableAccountService") CreateAccountUseCase createAccountUseCase) {
+        this.listAccountsUseCase = listAccountsUseCase;
+        this.getAccountUseCase = getAccountUseCase;
+        this.createAccountUseCase = createAccountUseCase;
     }
 
     @Override
     public List<Account> findAll() {
-        return List.of();
+        return listAccountsUseCase.findAll();
     }
 
     @Override
@@ -38,14 +48,14 @@ public class CachedAccountService implements IAccountService {
             return cached;
         }
         log.info("Cuenta {} no esta en cache - delegando al service real", id);
-        Account account = delegate.findById(id);
+        Account account = getAccountUseCase.findById(id);
         cache.put(id, account);
         return account;
     }
 
     @Override
     public Account create(Account account) {
-        Account created = delegate.create(account);
+        Account created = createAccountUseCase.create(account);
         cache.put(created.getId(), created);
         log.info("Cuenta {} agregada al cache", created.getId());
         return created;
