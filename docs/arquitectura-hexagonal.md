@@ -63,8 +63,8 @@ flowchart LR
     end
 
     subgraph APP["Aplicación"]
-        PIN(["port/in<br/>TransferMoneyUseCase"])
-        SVC["service<br/>TransferService<br/>AccountService"]
+        PIN(["port/in<br/>TransferMoneyUseCase<br/>CreateAccountUseCase · GetAccountUseCase<br/>ListAccountsUseCase · GetTransactionByAccountUseCase"])
+        SVC["service<br/>TransferService · TransactionQueryService<br/>AccountService"]
         POUT(["port/out<br/>AccountRepositoryPort<br/>TransactionRepositoryPort<br/>FraudCheckPort"])
     end
 
@@ -113,7 +113,8 @@ Contiene las reglas que existirían aunque no hubiera software: una cuenta no pu
 **✅ Sí va aquí:** entidades con comportamiento (`Account.withdraw()`), value objects (`Money`), reglas, validaciones de negocio, eventos y excepciones de negocio.
 **❌ No va aquí:** `@Entity`, `@RestController`, `ResponseEntity`, DTOs, repositorios JPA, llamadas HTTP, `@Transactional`.
 
-> ⚠️ En este proyecto el dominio todavía usa `@Component`, `@Service` y `@Order` de Spring por simplicidad. Ver la [sección 10](#10-decisiones-pragmáticas-y-pendientes).
+> ℹ️ Las calculadoras de comisión y los validadores son clases Java puras: **no llevan `@Component` ni `@Order`**. Se registran como beans en `infrastructure/config/DomainBeanConfig`, que también fija su orden.
+> ⚠️ Aún quedan restos de framework: `TransferDomainService` tiene `@Service` y varios modelos usan Lombok. Ver la [sección 10](#10-decisiones-pragmáticas-y-pendientes).
 
 | Paquete | Contenido | Ejemplos |
 |---|---|---|
@@ -145,7 +146,7 @@ Orquesta el dominio para cumplir una necesidad concreta del usuario: busca datos
 
 | Paquete | Contenido | Ejemplos |
 |---|---|---|
-| `port/in` | Lo que la aplicación ofrece al exterior | `TransferMoneyUseCase`, `CreateAccountUseCase` |
+| `port/in` | Lo que la aplicación ofrece al exterior (un puerto por caso de uso) | `TransferMoneyUseCase`, `CreateAccountUseCase`, `GetAccountUseCase`, `ListAccountsUseCase`, `GetTransactionByAccountUseCase` |
 | `port/out` | Lo que la aplicación necesita del exterior | `AccountRepositoryPort`, `TransactionRepositoryPort`, `FraudCheckPort` |
 | `service/account` | Casos de uso de cuentas | `AccountService`, `AuditableAccountService`, `CachedAccountService` |
 | `service/transaction` | Casos de uso de transacciones | `TransferService`, `TransactionProcessor`, `TransactionQueryService` |
@@ -177,7 +178,7 @@ Todo lo que depende de una tecnología: Spring MVC, JPA, servicios externos, con
 | `adapter/out/persistence/adapter` | Adaptador de **salida**: implementa los puertos | `AccountRepositoryAdapter`, `TransactionRepositoryAdapter` |
 | `adapter/out/fraud` | Adaptador de **salida** al servicio antifraude | `ExternalFraudCheckAdapter` |
 | `adapter/listener` | Reaccionan a eventos de dominio | `AuditListener`, `NotificationListener` |
-| `config` | Configuración transversal | `SecurityConfig`, `CacheConfig`, `GlobalExceptionHandler` |
+| `config` | Configuración transversal | `DomainBeanConfig` (registra los beans del dominio y su `@Order`), `SecurityConfig`, `CacheConfig`, `GlobalExceptionHandler` |
 
 ---
 
@@ -229,7 +230,7 @@ com.atlas.bank.atlas_bank
 
 ```java
 public interface TransferMoneyUseCase {
-    Transaction execute(Long fromId, Long toId, BigDecimal amount);
+    Transaction transfer(Long fromId, Long toId, BigDecimal amount);
 }
 ```
 
@@ -244,7 +245,7 @@ public class TransactionController {
 
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponse> transfer(@Valid @RequestBody TransferRequest request) {
-        Transaction transaction = transferMoneyUseCase.execute(
+        Transaction transaction = transferMoneyUseCase.transfer(
                 request.getFromAccountId(), request.getToAccountId(), request.getAmount());
         return ResponseEntity.ok(transactionMapper.toResponse(transaction));
     }
@@ -253,7 +254,31 @@ public class TransactionController {
 
 **Quien lo implementa** es el servicio de aplicación `TransferService`.
 
-### 5.2 Puerto de salida: `AccountRepositoryPort`
+### 5.2 Un servicio, varios puertos de entrada
+
+En lugar de una interfaz grande (`IAccountService`), cada caso de uso tiene su propio puerto. Un mismo servicio puede implementar varios:
+
+```java
+@Service
+public class AccountService implements ListAccountsUseCase, GetAccountUseCase, CreateAccountUseCase {
+    // findAll(), findById(id), create(account)
+}
+```
+
+Y el adaptador de entrada pide **solo los puertos que usa** (principio de segregación de interfaces):
+
+```java
+@RestController
+public class AccountController {
+    private final ListAccountsUseCase listAccountsUseCase;
+    private final GetAccountUseCase getAccountUseCase;
+    private final CreateAccountUseCase createAccountUseCase;
+}
+```
+
+`AccountDashboardFacade`, por ejemplo, solo necesita `GetAccountUseCase` y `GetTransactionByAccountUseCase`.
+
+### 5.3 Puerto de salida: `AccountRepositoryPort`
 
 **El puerto** (`application/port/out/AccountRepositoryPort.java`) dice *qué* necesita la aplicación, usando **objetos de dominio**:
 
@@ -289,7 +314,7 @@ public class AccountRepositoryAdapter implements AccountRepositoryPort {
 
 `TransferService` solo conoce `AccountRepositoryPort`. **No sabe que existe JPA.**
 
-### 5.3 Puerto de salida a un servicio externo: `FraudCheckPort`
+### 5.4 Puerto de salida a un servicio externo: `FraudCheckPort`
 
 ```java
 public interface FraudCheckPort {
@@ -325,7 +350,7 @@ sequenceDiagram
     participant L as Listeners<br/>(adapter)
 
     C->>TC: POST /transfer (TransferRequest)
-    TC->>TS: execute(fromId, toId, amount)
+    TC->>TS: transfer(fromId, toId, amount)
     TS->>AR: findById(from), findById(to)
     AR-->>TS: Account, Account
     TS->>V: validate(ctx): estado, fondos, fraude
@@ -341,10 +366,10 @@ sequenceDiagram
 Paso a paso:
 
 1. **Entrada**: `TransactionController` recibe el JSON como `TransferRequest`. `@DifferentAccounts` valida que origen y destino sean distintos.
-2. **Caso de uso**: el controller llama a `TransferMoneyUseCase.execute(...)`; la implementación es `TransferService`.
+2. **Caso de uso**: el controller llama a `TransferMoneyUseCase.transfer(...)`; la implementación es `TransferService`.
 3. **Carga de datos**: `TransferService` obtiene ambas cuentas mediante `AccountRepositoryPort`. Si no existen, lanza `AccountNotFoundException`.
 4. **Plantilla del proceso**: `TransactionProcessor.process()` define el orden fijo: **validar → calcular comisión → ejecutar → guardar**.
-5. **Validar**: se ejecutan en orden `AccountStatusValidator` (1), `SufficientFundsValidator` (2) y `FraudValidator` (3). Este último consulta `FraudCheckPort`.
+5. **Validar**: se ejecutan en orden `AccountStatusValidator` (1), `SufficientFundsValidator` (2) y `FraudValidator` (3), según el `@Order` definido en `DomainBeanConfig`. Este último consulta `FraudCheckPort`.
 6. **Comisión**: se elige el `FeeCalculator` que soporta el tipo de la cuenta origen (ahorro, cheques, premium...).
 7. **Regla de negocio**: `TransferDomainService.transfer()` llama a `from.withdraw()` y `to.deposite()`. Si no alcanza el saldo, el propio `Account` lanza `InsufficientFundsException`.
 8. **Persistencia**: se guardan las cuentas y la transacción (creada por `TransactionFactory`) a través de los puertos de salida.
@@ -379,10 +404,10 @@ La arquitectura hexagonal organiza las **capas**; dentro de ellas se aplican pat
 | Patrón | Dónde | Para qué |
 |---|---|---|
 | **Strategy** | `domain/strategy/fee/*FeeCalculator` | Una comisión distinta por tipo de cuenta |
-| **Chain of Responsibility** | `domain/validation/*Validator` (con `@Order`) | Validaciones encadenadas e independientes |
+| **Chain of Responsibility** | `domain/validation/*Validator` (orden con `@Order` en `DomainBeanConfig`) | Validaciones encadenadas e independientes |
 | **Template Method** | `application/service/transaction/TransactionProcessor` | Fija el orden validar → comisión → ejecutar → guardar |
 | **State** | `domain/model/transaction/state/*` | Ciclo de vida de la transacción (pendiente, ejecutada, rechazada...) |
-| **Decorator** | `AuditableAccountService`, `CachedAccountService` | Agregan auditoría o caché alrededor de `AccountService` |
+| **Decorator** | `AuditableAccountService`, `CachedAccountService` | Agregan auditoría o caché alrededor de los puertos de cuentas; se encadenan con `@Qualifier` (`Cached` → `Auditable` → `AccountService`) |
 | **Factory** | `domain/factory/TransactionFactory` | Construye transacciones válidas |
 | **Facade** | `adapter/in/rest/facade/AccountDashboardFacade` | Une cuenta + transacciones en una sola respuesta |
 | **Observer** | `TransactionExecutedEvent` → `AuditListener`, `NotificationListener` | Efectos secundarios desacoplados |
@@ -395,8 +420,8 @@ La arquitectura hexagonal organiza las **capas**; dentro de ellas se aplican pat
 | Quiero... | Pasos |
 |---|---|
 | **Un nuevo endpoint** | 1. Puerto en `application/port/in` · 2. Implementación en `application/service` · 3. DTOs en `adapter/in/rest/dto` y mapper en `adapter/in/rest/mapper` · 4. Método en el controller que use el **puerto** |
-| **Una nueva regla de negocio** | Si pertenece a una entidad, como un método en ella (ej. `Account.withdraw`). Si involucra varias, en `domain/service`. Si es una validación de transferencia, una nueva clase que implemente `TransferValidator` |
-| **Un nuevo tipo de comisión** | Nueva clase que implemente `FeeCalculator` en `domain/strategy/fee` |
+| **Una nueva regla de negocio** | Si pertenece a una entidad, como un método en ella (ej. `Account.withdraw`). Si involucra varias, en `domain/service`. Si es una validación de transferencia, una nueva clase que implemente `TransferValidator`, registrada con su `@Order` en `DomainBeanConfig` |
+| **Un nuevo tipo de comisión** | Nueva clase que implemente `FeeCalculator` en `domain/strategy/fee` y su `@Bean` en `DomainBeanConfig` |
 | **Integrar un servicio externo** | 1. Puerto en `application/port/out` con tipos de dominio · 2. Adaptador en `infrastructure/adapter/out/<nombre>` que lo implemente |
 | **Una nueva tabla** | 1. Modelo en `domain/model` · 2. `@Entity` en `persistence/entity` · 3. Spring Data en `persistence/repository` · 4. Mapper en `persistence/mapper` · 5. Puerto en `port/out` + adaptador en `persistence/adapter` |
 | **Reaccionar a algo que pasó** | Evento en `domain/event` y un listener en `infrastructure/adapter/listener` |
@@ -408,6 +433,7 @@ La arquitectura hexagonal organiza las **capas**; dentro de ellas se aplican pat
 - [ ] ¿Algo en `application` importa `infrastructure`? → falta un puerto.
 - [ ] ¿El controller depende de una clase concreta en vez de una interfaz de `port/in`? → usa el puerto.
 - [ ] ¿Un `@Entity` o un DTO llegó al dominio? → falta un mapper.
+- [ ] ¿Una clase nueva de dominio necesita ser bean? → regístrala en `DomainBeanConfig`, no con `@Component`.
 
 ---
 
@@ -417,11 +443,12 @@ Este proyecto está **en migración** hacia la arquitectura hexagonal. Lo siguie
 
 | Situación | Por qué no es "puro" | Mejora sugerida |
 |---|---|---|
-| El dominio usa `@Component`, `@Service`, `@Order` de Spring y Lombok | El dominio depende de un framework | Aceptable por simplicidad. Para pureza total, registrar los beans en una clase `@Configuration` de `infrastructure/config` |
+| `TransferDomainService` tiene `@Service` **y** además un `@Bean` en `DomainBeanConfig` | Dos definiciones con el mismo nombre de bean; Spring Boot no permite sobrescribirlas por defecto y la app puede no arrancar | Quitar `@Service` y dejar solo el `@Bean` |
+| Modelos del dominio y `FraudValidator` usan Lombok | Dependencia de una librería en el dominio (no de un framework de runtime) | Aceptable por simplicidad |
 | `domain/validation/FraudValidator` importa `application.port.out.FraudCheckPort` | El dominio depende de la capa de aplicación (dependencia hacia afuera) | Mover `FraudValidator` a `application`, o mover la interfaz del puerto al dominio |
-| `ITransferService` duplica a `TransferMoneyUseCase` | Dos interfaces para lo mismo | Eliminar `ITransferService` |
-| `CreateAccountUseCase` no lo implementa nadie | Puerto sin uso | Que `AccountService` lo implemente |
-| `AccountController` y `AccountDashboardFacade` usan `IAccountService` / `ITransactionQueryService` | Dependen de servicios, no de puertos de entrada | Crear puertos de consulta (ej. `GetAccountUseCase`) y eliminar las interfaces `I*Service` |
-| `CachedAccountService` y `AuditableAccountService` tienen `@Primary` | Si se activa `atlas.account.cache.enabled=true` hay dos beans primarios y la app no arranca | Encadenar los decoradores explícitamente con `@Qualifier`. `CachedAccountService` se conserva como ejemplo del patrón Decorator |
+| `savingsFeeCalculator` usa `@Order` sin valor y `DefaultFeeCalculator` no tiene `@Order` | `@Order` sin valor equivale a la prioridad más baja, así que ahorro queda al final junto al calculador por defecto | Usar `@Order(1)` en ahorro y dar al calculador por defecto el último lugar explícito |
+| `CachedAccountService` y `AuditableAccountService` tienen `@Primary` | Los decoradores ya se encadenan con `@Qualifier`, pero si se activa `atlas.account.cache.enabled=true` hay dos beans primarios y la app no arranca | Quitar `@Primary` de `AuditableAccountService` cuando la caché esté activa (o decidir el bean primario en una `@Configuration`). `CachedAccountService` se conserva como ejemplo del patrón Decorator |
 | `FraudChecker` (interfaz anterior) convive con `FraudCheckPort` | Restos de la versión previa | Eliminar `FraudChecker` cuando nada lo use |
 | Los eventos se publican desde `TransactionRepositoryAdapter` | La publicación de eventos queda acoplada a la persistencia | Publicarlos desde el servicio de aplicación mediante un `DomainEventPublisherPort` |
+
+**Ya resuelto en la migración:** se eliminaron `IAccountService`, `ITransferService` e `ITransactionQueryService` en favor de puertos de entrada; `AccountService` implementa `CreateAccountUseCase`; controllers y fachada dependen solo de puertos; las calculadoras y validadores dejaron de usar anotaciones de Spring.
