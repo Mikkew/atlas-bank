@@ -1,6 +1,7 @@
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
     command: start-dev
     ports:
       - "8181:8080"
@@ -18,7 +19,8 @@ services:
         condition: service_healthy
 
   postgres-kc:
-    image: postgres:16
+    image: postgres:17
+    container_name: postgres-keycloak
     ports:
       - "5433:5432"
     environment:

@@ -1,0 +1,21 @@
+package com.atlas.bank.atlas_bank.domain.validation;
+
+import com.atlas.bank.atlas_bank.application.port.out.FraudCheckPort;
+import com.atlas.bank.atlas_bank.domain.exception.FraudCheckException;
+import com.atlas.bank.atlas_bank.domain.model.shared.FraudCheckResult;
+import com.atlas.bank.atlas_bank.domain.model.transaction.TransferContext;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class FraudValidator implements TransferValidator {
+
+    private final FraudCheckPort fraudChecker;
+
+    @Override
+    public void validate(TransferContext ctx) {
+        final FraudCheckResult fraudCheckResult = fraudChecker.check(ctx.from().getId(), ctx.amount());
+        if (fraudCheckResult.blocked()) {
+            throw new FraudCheckException(fraudCheckResult.reason());
+        }
+    }
+}

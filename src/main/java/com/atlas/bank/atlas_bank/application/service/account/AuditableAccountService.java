@@ -1,0 +1,59 @@
+package com.atlas.bank.atlas_bank.application.service.account;
+
+import com.atlas.bank.atlas_bank.application.port.in.CreateAccountUseCase;
+import com.atlas.bank.atlas_bank.application.port.in.GetAccountUseCase;
+import com.atlas.bank.atlas_bank.application.port.in.ListAccountsUseCase;
+import com.atlas.bank.atlas_bank.domain.model.account.Account;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Slf4j
+@Component
+@Primary
+public class AuditableAccountService implements ListAccountsUseCase, GetAccountUseCase, CreateAccountUseCase {
+
+    private final ListAccountsUseCase listAccountsUseCase;
+    private final GetAccountUseCase getAccountUseCase;
+    private final CreateAccountUseCase createAccountUseCase;
+
+    public AuditableAccountService(
+                                @Qualifier("accountService") GetAccountUseCase getAccountUseCase,
+                                @Qualifier("accountService") CreateAccountUseCase createAccountUseCase,
+                                @Qualifier("accountService") ListAccountsUseCase listAccountsUseCase) {
+        this.getAccountUseCase = getAccountUseCase;
+        this.createAccountUseCase = createAccountUseCase;
+        this.listAccountsUseCase = listAccountsUseCase;
+    }
+
+    @PostConstruct
+    public void init() {
+        log.info("Clase real del accountService: {}", listAccountsUseCase.getClass().getName());
+        log.info("Clase real del accountService: {}", getAccountUseCase.getClass().getName());
+        log.info("Clase real del accountService: {}", createAccountUseCase.getClass().getName());
+    }
+
+
+    @Override
+    public List<Account> findAll() {
+        return listAccountsUseCase.findAll();
+    }
+
+    @Override
+    public Account findById(Long id) {
+        return getAccountUseCase.findById(id);
+    }
+
+    @Override
+    public Account create(Account account) {
+        log.info("Creando cuenta - numero: {}, titular: {}",
+                account.getAccountNumber(), account.getOwnerName());
+        Account created = createAccountUseCase.create(account);
+        log.info("Cuenta creada exitosamente - ID: {}", created.getId());
+        return created;
+    }
+}
