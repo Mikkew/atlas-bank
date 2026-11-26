@@ -1,8 +1,7 @@
 package com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity;
 
-import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Email;
-
 import com.atlas.bank.atlas_bank.domain.model.customer.CustomerStatus;
+import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Email;
 import jakarta.persistence.*;
 import lombok.*;
 

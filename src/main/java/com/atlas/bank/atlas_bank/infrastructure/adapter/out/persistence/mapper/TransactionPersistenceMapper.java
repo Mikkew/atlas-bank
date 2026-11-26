@@ -1,8 +1,7 @@
 package com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.mapper;
 
-import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.TransactionJpaEntity;
-
 import com.atlas.bank.atlas_bank.domain.model.transaction.Transaction;
+import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.TransactionJpaEntity;
 import org.springframework.stereotype.Component;
 
 @Component

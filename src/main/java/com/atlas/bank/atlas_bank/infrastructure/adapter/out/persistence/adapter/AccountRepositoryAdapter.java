@@ -1,7 +1,7 @@
 package com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.adapter;
 
-import com.atlas.bank.atlas_bank.domain.model.account.Account;
 import com.atlas.bank.atlas_bank.application.port.out.AccountRepositoryPort;
+import com.atlas.bank.atlas_bank.domain.model.account.Account;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.AccountJpaEntity;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.mapper.AccountPersistenceMapper;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.repository.AccountRepository;

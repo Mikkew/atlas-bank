@@ -1,9 +1,9 @@
 package com.atlas.bank.atlas_bank.infrastructure.config;
 
-import com.atlas.bank.atlas_bank.domain.exception.AccountNotFoundException;
 import com.atlas.bank.atlas_bank.domain.exception.AccountNotActiveException;
-import com.atlas.bank.atlas_bank.domain.exception.InsufficientFundsException;
+import com.atlas.bank.atlas_bank.domain.exception.AccountNotFoundException;
 import com.atlas.bank.atlas_bank.domain.exception.FraudCheckException;
+import com.atlas.bank.atlas_bank.domain.exception.InsufficientFundsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

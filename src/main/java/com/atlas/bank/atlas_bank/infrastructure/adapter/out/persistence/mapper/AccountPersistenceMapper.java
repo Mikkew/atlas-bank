@@ -1,11 +1,10 @@
 package com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.mapper;
 
+import com.atlas.bank.atlas_bank.domain.model.account.Account;
+import com.atlas.bank.atlas_bank.domain.model.shared.Currency;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.AccountJpaEntity;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Email;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Money;
-
-import com.atlas.bank.atlas_bank.domain.model.account.Account;
-import com.atlas.bank.atlas_bank.domain.model.shared.Currency;
 import org.springframework.stereotype.Component;
 
 @Component

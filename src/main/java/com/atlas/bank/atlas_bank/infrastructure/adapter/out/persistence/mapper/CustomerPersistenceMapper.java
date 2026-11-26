@@ -1,9 +1,8 @@
 package com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.mapper;
 
+import com.atlas.bank.atlas_bank.domain.model.customer.Customer;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.CustomerJpaEntity;
 import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Email;
-
-import com.atlas.bank.atlas_bank.domain.model.customer.Customer;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,11 +1,10 @@
 package com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity;
 
-import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Email;
-import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Money;
-
 import com.atlas.bank.atlas_bank.domain.model.account.AccountStatus;
 import com.atlas.bank.atlas_bank.domain.model.account.AccountType;
 import com.atlas.bank.atlas_bank.domain.model.shared.Currency;
+import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Email;
+import com.atlas.bank.atlas_bank.infrastructure.adapter.out.persistence.entity.embeddable.Money;
 import jakarta.persistence.*;
 import lombok.*;
 

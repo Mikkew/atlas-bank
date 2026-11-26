@@ -3,8 +3,8 @@ package com.atlas.bank.atlas_bank.domain.factory;
 import com.atlas.bank.atlas_bank.domain.model.transaction.Transaction;
 import com.atlas.bank.atlas_bank.domain.model.transaction.TransactionStatus;
 import com.atlas.bank.atlas_bank.domain.model.transaction.TransactionType;
-import com.atlas.bank.atlas_bank.domain.model.transaction.state.PendingState;
 import com.atlas.bank.atlas_bank.domain.model.transaction.TransferContext;
+import com.atlas.bank.atlas_bank.domain.model.transaction.state.PendingState;
 
 import java.math.BigDecimal;
 
