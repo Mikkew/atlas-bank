@@ -3,7 +3,7 @@ package com.atlas.bank.atlas_bank.domain.model.account;
 import com.atlas.bank.atlas_bank.domain.model.shared.Currency;
 import com.atlas.bank.atlas_bank.domain.model.shared.Email;
 import com.atlas.bank.atlas_bank.domain.model.shared.Money;
-import com.atlas.bank.atlas_bank.transaction.exception.InsufficientFundsException;
+import com.atlas.bank.atlas_bank.domain.exception.InsufficientFundsException;
 import lombok.*;
 
 import java.time.LocalDateTime;

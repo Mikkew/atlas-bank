@@ -1,7 +1,0 @@
-package com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.repository;
-
-import com.atlas.bank.atlas_bank.infraestructure.adapter.out.persistence.entity.AccountJpaEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface AccountRepository  extends JpaRepository<AccountJpaEntity, Long> {
-}

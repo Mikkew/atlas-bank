@@ -1,9 +1,8 @@
 package com.atlas.bank.atlas_bank.domain.model.transaction;
 
+import com.atlas.bank.atlas_bank.domain.event.TransactionExecutedEvent;
 import com.atlas.bank.atlas_bank.domain.model.transaction.state.*;
-import com.atlas.bank.atlas_bank.transaction.service.event.TransactionExecutedEvent;
 import lombok.*;
-import org.springframework.data.domain.AbstractAggregateRoot;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,8 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-public class Transaction extends AbstractAggregateRoot<Transaction> {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class Transaction {
 
     @EqualsAndHashCode.Include
     private Long id;
@@ -60,7 +59,7 @@ public class Transaction extends AbstractAggregateRoot<Transaction> {
     }
 
     public void markAsExecuted() {
-        registerEvent(new TransactionExecutedEvent(
+        domainEvents.add(new TransactionExecutedEvent(
                 id,
                 type.name(),
                 sourceAccountId,
